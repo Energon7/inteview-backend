@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+    api-server:
+        platform: linux/x86_64
+        build:
+            context: ./
+            dockerfile: docker/Dockerfile
+            args:
+                - APACHE_USER=${APACHE_USER:-www-data}
+                - APACHE_GROUP=${APACHE_GROUP:-www-data}
+                - USER_ID=${USER_ID:-1000}
+        container_name: api
+        ports:
+            - ${DOCKER_WEB_SERVER:-8000}:80
+        networks:
+            - default
+        environment:
+            APPLICATION_ENV: "dev_docker"
+        restart: unless-stopped
+        volumes:
+            - ./:/var/www/html
+
+    postgres-server:
+        image: postgres:11
+        platform: linux/x86_64
+        container_name: postgres
+        environment:
+            - POSTGRES_ROOT_PASSWORD=${POSTGRES_ROOT_PASSWORD:-root}
+            - POSTGRES_DB=${POSTGRES_DB:-db}
+            - POSTGRES_USER=${POSTGRES_USER:-user}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secret}
+            - TZ=Asia/Baku
+        ports:
+            - ${POSTGRES_PORT:-5432}:5432
+        networks:
+            - default
+        volumes:
+            - ./:/var/www/html
